@@ -1,0 +1,44 @@
+# Ignore sensitive files
+.env
+nginx/ssl/*
+*.key
+*.crt
+*.pem
+
+# Ignore runtime data
+mysql/mysql-data/*
+mysql/mysql-logs/*
+mysql/run/*
+redis/redis-data/*
+redis/redis-logs/*
+apache/apache-logs/*
+nginx/nginx-logs/*
+opt/processmaker/*
+opt/secure-plugins/*
+opt/decrypted-plugins/*
+var/log/*
+*.log
+
+# Ignore temporary files
+*.bak
+*.backup
+*.old
+*.orig
+*.swp
+*.tmp
+*.tar.gz
+*.tar.gz.enc
+
+# Ignore IDE and editor files
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# Ignore Docker build artifacts
+*.dockerignore
+Dockerfile.bak
+docker-compose.yml.bak
+
+# Allow .gitkeep for empty directories
+!*.gitkeep 

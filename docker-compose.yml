@@ -1,0 +1,100 @@
+services:
+  apache:
+    build:
+      context: ./php
+      dockerfile: Dockerfile
+    container_name: pm_apache
+    volumes:
+      - /opt/processmaker:/opt/processmaker
+      - ./apache/000-default.conf:/etc/apache2/sites-available/000-default.conf
+      - ./apache/security.conf:/etc/apache2/conf-available/security.conf
+      - ./apache/apache-logs:/var/log/apache2
+    depends_on:
+      - mysql
+    networks:
+      pm_network:
+        aliases:
+          - pm_apache
+    security_opt:
+      - no-new-privileges:true
+    restart: always
+
+  mysql:
+    image: percona/percona-server:8.0.42-33
+    container_name: pm_mysql
+    cap_add:
+      - SYS_NICE
+    restart: unless-stopped
+    user: "1001:1001"
+    environment:
+      MYSQL_ROOT_PASSWORD: "${MYSQL_ROOT_PASSWORD}"
+      MYSQL_ALLOW_EMPTY_PASSWORD: "no"
+    ports:
+      - "3306:3306"
+    volumes:
+      - ./mysql/mysql-data:/var/lib/mysql
+      - ./mysql/mysql-init:/docker-entrypoint-initdb.d
+      - ./mysql/mysql-logs:/var/log/mysql
+      - ./mysql/mysql-config/my.cnf:/etc/mysql/conf.d/my.cnf
+      - ./mysql/run:/var/run/mysqld
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 60s
+    networks:
+      pm_network:
+        aliases:
+          - pm_mysql
+        ipv4_address: 10.0.1.30
+    security_opt:
+      - no-new-privileges:true
+
+  nginx:
+    image: nginx:1.28.0-alpine3.21
+    container_name: pm_nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/conf.d:/etc/nginx/conf.d
+      - ./ssl:/etc/nginx/certs
+      - /opt/processmaker/workflow/public_html:/var/www/html
+      - ./nginx/nginx-logs:/var/log/nginx
+    depends_on:
+      - apache
+    networks:
+      pm_network:
+        aliases:
+          - pm_nginx
+    security_opt:
+      - no-new-privileges:true
+    restart: always
+
+  redis:
+    image: redis:7.4.1-alpine3.20
+    container_name: pm_redis
+    command: redis-server /usr/local/etc/redis/redis.conf
+    volumes:
+      - ./redis/redis-data:/data
+      - ./redis/redis.conf:/usr/local/etc/redis/redis.conf
+      - ./redis/redis-logs:/var/log/redis
+    networks:
+      pm_network:
+        aliases:
+          - pm_redis
+    security_opt:
+      - no-new-privileges:true
+    restart: always
+    user: "999:999"
+    sysctls:
+      - net.core.somaxconn=65535
+
+networks:
+  pm_network:
+    driver: bridge
+    name: pm_network
+    ipam:
+      config:
+        - subnet: 10.0.0.0/16
