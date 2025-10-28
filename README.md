@@ -62,7 +62,7 @@ ProcessMaker 3 remains the **gold standard** for open-source BPM due to its rich
 
 ### **Future Enhancements (In Development)**
 - Custom modern frontend interface
-- Google Authentication (SSO)
+- Google Authentication
 
 ---
 
