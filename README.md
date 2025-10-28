@@ -23,11 +23,11 @@ ProcessMaker 3 remains the **gold standard** for open-source BPM due to its rich
 ## Key Features
 
 ### **Multi-Stage Dockerfile Build**
-- Dependencies (zlib 1.3.1, OpenSSL 1.1.1w) compiled in a **builder stage**
+- Dependencies (zlib, OpenSSL) compiled in a **builder stage**
 - Only runtime artifacts copied to final image → **smaller size, fewer vulnerabilities**
 
 ### **Advanced Security Hardening**
-- **Patched CVE-2023-45853** with secure **zlib 1.3.1**
+- **Patched CVE-2023-45853** with secure **zlib**
 - **XSS & SQL Injection filters** in `security-filter.php` + Apache rewrite rules
 - **Security headers**:
   - `X-Content-Type-Options: nosniff`
@@ -39,14 +39,14 @@ ProcessMaker 3 remains the **gold standard** for open-source BPM due to its rich
 - **Rate limiting**, HTTP method restrictions, sensitive file blocking
 
 ### **Redis-Powered Session Management**
-- **Redis 7.4.1** with optimized config (`maxmemory`, `appendonly yes`)
+- **Redis** with optimized config (`maxmemory`, `appendonly yes`)
 - Risky commands disabled (`FLUSHDB`, `FLUSHALL`)
 - **File-based fallback** if Redis is unavailable
 - Tune `maxmemory` in `redis.conf` (e.g., 1GB for medium workloads)
 
 ### **Full Database Support & Tuning**
 - Drivers: **MySQL, Oracle (oci8), PostgreSQL, SQL Server (sqlsrv/pdo_sqlsrv)**
-- **Percona Server 8.0.42** with production-grade tuning in `my.cnf`:
+- **Percona Server** with production-grade tuning in `my.cnf`:
   - `innodb_buffer_pool_size` (e.g., 1536M for 2GB RAM)
   - `innodb_flush_method=O_DIRECT`
   - `skip_name_resolve=1`, `innodb_file_per_table`
@@ -77,16 +77,21 @@ ProcessMaker 3 remains the **gold standard** for open-source BPM due to its rich
 
 ## Installation & Setup
 
+> **Important**: Before building, **download the ProcessMaker 3 source code** and place it in the directory specified by the `COPY` instruction in `php/Dockerfile` (typically `processmaker/` at the project root).
+
 ```bash
 # 1. Clone the repository
 git clone https://github.com/nabavie/processmaker3-docker.git
 cd processmaker3-docker
 
-# 2. Build images (multi-stage)
+# 2. Place ProcessMaker 3 source code
+#    → Extract or clone into: ./processmaker/ (or as defined in php/Dockerfile)
+
+# 3. Build images (multi-stage)
 docker compose build
 
-# 3. Start containers in background
+# 4. Start containers in background
 docker compose up -d
 
-# 4. Follow logs in real-time
+# 5. Follow logs in real-time
 docker compose logs -f
